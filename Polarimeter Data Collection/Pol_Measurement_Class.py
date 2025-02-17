@@ -1,3 +1,5 @@
+import math
+
 class Pol_Measurement:
     """
     Class that can be used to retrieve attributes and stuff from multiple measurements with the
@@ -41,7 +43,8 @@ class Pol_Measurement:
         # -1 comes from the final column being "warnings", which are empty
         for x in range(len(key_vals) - 1):
             data_dict[key_vals[x]] = []
-        # Getting the data out into a dictionary of lists of data:
+            self.data_keys = list(data_dict.keys())
+            # Getting the data out into a dictionary of lists of data:
         # -9 since the data doesn't start until line 10
         for n in range(len(file_content_lines) - 9):
             data_list = file_content_lines[n + 9].split(";")
@@ -63,14 +66,35 @@ class Pol_Measurement:
 
     def average(self, param: str):
         """
-        :param param:
+        :param param: String in self.data_keys.
         :return:
         """
-        data_list = self.data[param]
-        if type(data_list[0]) == float:
-            sum_val = 0
-            for i in range(len(data_list)):
-                sum_val += data_list[i]
-            return sum_val / len(data_list)
+        if param not in self.data_keys:
+            print(f"ERROR: Please input one of the following data keys: {self.data_keys}")
         else:
-            print("Cannot execute average on non-numerical values")
+            data_list = self.data[param]
+            if type(data_list[0]) == float:
+                sum_val = 0
+                for i in range(len(data_list)):
+                    sum_val += data_list[i]
+                return sum_val / len(data_list)
+            else:
+                print("Cannot execute average on non-numerical values")
+
+    def stdev(self, param: str):
+        """
+        :param param: String in self.data_keys.
+        :return:
+        """
+        if param not in self.data_keys:
+            print(f"ERROR: Please input one of the following data keys: {self.data_keys}")
+        else:
+            data_list = self.data[param]
+            if type(data_list[0]) == float:
+                #perform stdev computation
+                sum_val = 0
+                for i in range(len(data_list)):
+                    sum_val += (data_list[i] - self.average(param)) ** 2
+                return math.sqrt(sum_val / len(data_list))
+            else:
+                print("Cannot execute average on non-numerical values")
