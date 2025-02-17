@@ -60,3 +60,17 @@ class Pol_Measurement:
             split_time = time_list[i].split(":")
             time_ms_list.append(3600000 * float(split_time[0]) + 60000 * float(split_time[1]) + 1000 * float(split_time[2]) + float(split_time[3]))
         return time_ms_list
+
+    def average(self, param: str):
+        """
+        :param param:
+        :return:
+        """
+        data_list = self.data[param]
+        if type(data_list[0]) == float:
+            sum_val = 0
+            for i in range(len(data_list)):
+                sum_val += data_list[i]
+            return sum_val / len(data_list)
+        else:
+            print("Cannot execute average on non-numerical values")
