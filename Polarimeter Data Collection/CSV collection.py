@@ -34,4 +34,11 @@ def create_measurement_objects(file_paths: list[str]):
     :param file_paths: list of file paths as strings
     :return: returns a list of polarization measurement objects
     """
-    raise NotImplemented
+    measurement_list = []
+    for path in file_paths:
+        path_str_lst = path.split("\\")
+        str_name = path_str_lst[-1]
+        measurement_list.append(Pol_Measurement(str_name, path))
+    return measurement_list
+
+measured_objects = create_measurement_objects(create_file_paths_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data", []))
