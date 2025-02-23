@@ -1,3 +1,3 @@
-Currently I have just set up this code to move the telescope in each direction for a specified time.  I suggest adding a separate py file that can do all the math and then we can package everything up into functions.  Once we do that, combining everything should be pretty easy.
-
-Current versions of the control code are in Pulse, while my  Winter project is in the Winter_prof folder.
+This repository contains files from the Optical Ground Station.
+  - Polarimeter Data Collection Contains data obtained from Polarimeter experiments and code to parse that data written by Juan Prieto
+  - Telescope Control contains code to control the telescope and point it according to a predetermined path
