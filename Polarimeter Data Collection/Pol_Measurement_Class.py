@@ -100,8 +100,19 @@ class Pol_Measurement:
             else:
                 print("Cannot execute average on non-numerical values")
 
-    def plot_to_time(self, param_x: str):
-        raise NotImplementedError
+    def create_plot_to_time(self, param: str, data_point_len):
+        data_dict = self.data
+        data = data_dict[param]
+        time_list = self.__time_to_milliseconds()
+        data_adj = []
+        time_list_adj = []
+        for i in range(data_point_len):
+            data_adj.append(data[i])
+            time_list_adj.append(time_list[i])
+        plt.plot(time_list_adj, data_adj)
+        plt.xlabel("Time [ms]")
+        plt.ylabel(f"{param}")
+        plt.title(f"{param} to time, {self.name}")
 
     def plot_2param(self, param_x: str, param_y: str):
         data_dict = self.data
@@ -110,7 +121,7 @@ class Pol_Measurement:
     def plot_hist(self, param, bins):
         data_dict = self.data
         data = data_dict[param]
-        for data_point in data:
-            data_point = float(data_point)
         plt.hist(data, bins=bins, color="skyblue", edgecolor="black")
-        plt.show()
+        plt.ylabel("Frequency")
+        plt.xlabel(f"{param} value")
+        plt.title(f"{param}, {self.name}")
