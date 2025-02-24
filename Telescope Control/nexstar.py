@@ -1,27 +1,10 @@
-'''
-Created on Mar 28, 2021
-
-@author: doktorbrown
-
-basic usb control Class for celestron nexstar 5se mount.  additional controls for svbony305 camera
-'''
 
 import serial
+import serial.tools.list_ports
 from datetime import datetime
-# from datetime import time
 import time
-# import kivy
-# from kivy.app import App
-# from kivy.uix.gridlayout import GridLayout
-# from kivy.uix.label import Label
-# from kivy.uix.button import Button
-# from kivy.clock import Clock
-# from functools import partial
-from kivy.event import EventDispatcher
-# from kivy.uix.textinput import TextInput
-# from kivy.uix.behaviors import ButtonBehavior
-# from kivy.uix.widget import Widget
-#
+
+
 
 
 
@@ -30,12 +13,9 @@ from kivy.event import EventDispatcher
 #need to search /dev
 #likely not the same ID on pi
 ser = serial.Serial(
-#     port='/dev/cu.usbmodem14241',
-#     port='/dev/cu.usbmodem14211',
-#     port='/dev/serial/by-id/usb-UNIDEN_AMERICA_CORP._BCD436HP_Serial_Port-if00', #on raspberry pi
-#     port='/dev/cu.usbmodem14231',
-    # port='/dev/cu.usbmodem1411',
-    port='/dev/tty.PL2303G-USBtoUART10',
+    #need to search /dev for the correct port
+    
+    port='/dev/tty.PL2303G-USBtoUART110',
     baudrate=9600,
     bytesize=serial.EIGHTBITS,
     parity=serial.PARITY_NONE,
@@ -48,19 +28,11 @@ ser = serial.Serial(
 #test connection
 print('connected:', ser.name)
 
-class Nexstar(EventDispatcher):
+#class Nexstar(EventDispatcher):
+class Nexstar():
     def __init__(self, **kwargs):
         self.register_event_type('on_test')
         super(Nexstar, self).__init__(**kwargs)
-
-    # def nexstarComm(command):
-    #
-        # ser.write(command)
-        # s = ser.read(100)
-        # # time.sleep(3)
-        # # ser.close()
-        #
-        # return(s)
 
     def timeGetter():#will be used to update via setTime push if system vs. scanner time drifts beyond a set delta
     #     today=str(datetime.today())
@@ -91,7 +63,7 @@ class Nexstar(EventDispatcher):
 
         return (hourNow,minNow,secNow,monthNow,dayNow,yearNow)
 
-    print(timeGetter())
+    #print(timeGetter())
 
 
 
@@ -102,27 +74,31 @@ class Nexstar(EventDispatcher):
     #65536/360
     #65536/90
 
-    def gotoRA_DEC(RA,DEC):
-        raDec=bytes('R'+ (RA) + ',' + (DEC),'utf-8')
-        print("raDec inside gotoRA_DEC  :",  raDec)
-        # time.sleep(4)
-        return raDec
+def gotoRA_DEC(RA,DEC):
+    raDec=bytes('R'+ (RA) + ',' + (DEC),'utf-8')
+    print("raDec inside gotoRA_DEC  :",  raDec)
+    # time.sleep(4)
+    return raDec
 
-    def gotoAZM_ALT(ALT,AZM):
-        azmAlt=bytes('B'+ (ALT) + ',' + (AZM),'utf-8')
-        print("azmAlt inside gotoAZM_ALT  :",  azmAlt)
-        # time.sleep(4)
-        return azmAlt
-
+def gotoAZM_ALT(AZM,ALT):
+    #Not that the order here is swithced
+    azmAlt=bytes('B'+ (AZM) + ',' + (ALT),'utf-8')
+    print("azmAlt inside gotoAZM_ALT  :",  AZM, ALT)
+    # time.sleep(4)
+    return azmAlt
+def polaris_align_RA_DEC(RA,DEC):
+    align_command=bytes('S' + (RA) + ',' + (DEC),'utf-8')
+    return align_command
     def azm_alt_precise_decimal():
         a=nexstarComm(getAZM_ALT_PRECISE)
         azimuth_decimal=float(a[0])
         altitude_decimal=float(a[1])
         return azimuth_decimal,altitude_decimal
 
-    #Get Position Commands
+#Get Position Commands
 getRA_DEC = bytes('E','utf-8')
 getRA_DEC_PRECISE = bytes('e','utf-8')
+#This returns 
 getAZM_ALT = bytes('Z','utf-8')
 getAZM_ALT_PRECISE = bytes('z','utf-8')
 
@@ -143,18 +119,18 @@ getTrackingMode = bytes('t','utf-8')
 # G=24
 # H=1
 
-getLocation = bytes('w','utf-8')
-print("getLocation",getLocation)
+#getLocation = bytes('w','utf-8')
+#print("getLocation",getLocation)
 # b"('\x00\x00K\x1a\x00\x01#"
 # b'(\x1e.\x00N\x05\x18\x01#'
-setLocation = bytes('W'+ chr(40)+chr(30)+chr(46)+chr(0)+chr(78)+chr(5)+chr(24)+chr(1), 'utf-8')
-print("setLocation",setLocation)
+#setLocation = bytes('W'+ chr(40)+chr(30)+chr(46)+chr(0)+chr(78)+chr(5)+chr(24)+chr(1), 'utf-8')
+#print("setLocation",setLocation)
 
 
-getTime = bytes('h','utf-8')
+#getTime = bytes('h','utf-8')
 
-H=Nexstar.timeGetter()
-print("H",H[0],H[1],H[2],H[3],H[4],H[5])
+#H=Nexstar.timeGetter()
+#print("H",H[0],H[1],H[2],H[3],H[4],H[5])
 # Q=hour
 # R=min
 # S=sec
@@ -164,16 +140,16 @@ print("H",H[0],H[1],H[2],H[3],H[4],H[5])
 # W=251 (offset from GMT. 256 - zone   -5UTC = 251)
 # X=1 for Daylight Savings, 0 for Standard Time
 
-setTime = bytes('H'+
-                chr(int(H[0]))+
-                chr(int(H[1]))+
-                chr(int(H[2]))+
-                chr(int(H[3]))+
-                chr(int(H[4]))+
-                chr(int(H[5]))+
-                chr(251)+
-                chr(1),
-                'utf-8')
+#setTime = bytes('H'+
+#                chr(int(H[0]))+
+#                chr(int(H[1]))+
+#                chr(int(H[2]))+
+#                chr(int(H[3]))+
+#                chr(int(H[4]))+
+#                chr(int(H[5]))+
+#                chr(251)+
+#                chr(1),
+#                'utf-8')
 # print("setTime",setTime)
 # print(nexstarComm(getTime))
 # print("setTime set",nexstarComm(setTime))
@@ -216,4 +192,31 @@ slewAZM_NegativeFive = bytes('P'+ chr(2)+chr(16)+chr(37)+chr(6)+chr(0)+chr(0)+ch
 
 slewALT_PositiveFive = bytes('P'+ chr(2)+chr(17)+chr(36)+chr(6)+chr(0)+chr(0)+chr(0), 'utf-8')
 slewALT_NegativeFive = bytes('P'+ chr(2)+chr(17)+chr(37)+chr(6)+chr(0)+chr(0)+chr(0), 'utf-8')
+
+#Variable slewing commands
+import numpy as np
+def slewAZM_var(arcsec_rate):
+    rate_mag=abs(arcsec_rate)
+    trackRateHigh = int(np.floor((rate_mag * 4)/(256)))
+    trackRateLow = int(np.floor((rate_mag * 4)%256))
+    #If rate is negative, send command for slewing in the negative direction
+    if arcsec_rate<0:
+        #Negative slew direction
+        dir=7
+    else:
+        #Positive slew direction
+        dir=6
+    return bytes('P'+chr(3)+chr(16)+chr(dir)+chr(trackRateHigh)+chr(trackRateLow)+chr(0)+chr(0),'utf-8')
+def slewALT_var(arcsec_rate):
+    rate_mag=abs(arcsec_rate)
+    trackRateHigh = int(np.floor((rate_mag * 4)/(256)))
+    trackRateLow = int(np.floor((rate_mag * 4)%256))
+    #If rate is negative, send command for slewing in the negative direction
+    if arcsec_rate<0:
+        #Negative slew direction
+        dir=7
+    else:
+        #Positive slew direction
+        dir=6
+    return bytes('P'+chr(3)+chr(17)+chr(dir)+chr(trackRateHigh)+chr(trackRateLow)+chr(0)+chr(0),'utf-8')
 
