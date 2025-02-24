@@ -42,3 +42,8 @@ def create_measurement_objects(file_paths: list[str]):
     return measurement_list
 
 measured_objects = create_measurement_objects(create_file_paths_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data", []))
+print(measured_objects[0].name)
+print(measured_objects[0].data_keys)
+print(measured_objects[1].average("DOP[%] "))
+print(measured_objects[1].stdev("DOP[%] "))
+measured_objects[0].plot_hist("DOP[%] ", 30)

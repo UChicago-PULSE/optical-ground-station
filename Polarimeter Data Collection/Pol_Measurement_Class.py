@@ -1,4 +1,5 @@
 import math
+import matplotlib.pyplot as plt
 
 class Pol_Measurement:
     """
@@ -56,7 +57,7 @@ class Pol_Measurement:
                     data_dict[key_vals[m]] += [data_list[m]]
         self.data = data_dict
 
-    def time_to_milliseconds(self) -> list[float]:
+    def __time_to_milliseconds(self) -> list[float]:
         time_list = self.data["Elapsed Time [hh:mm:ss:ms]"]
         time_ms_list = []
         for i in range(len(time_list)):
@@ -98,3 +99,18 @@ class Pol_Measurement:
                 return math.sqrt(sum_val / len(data_list))
             else:
                 print("Cannot execute average on non-numerical values")
+
+    def plot_to_time(self, param_x: str):
+        raise NotImplementedError
+
+    def plot_2param(self, param_x: str, param_y: str):
+        data_dict = self.data
+        raise NotImplementedError
+
+    def plot_hist(self, param, bins):
+        data_dict = self.data
+        data = data_dict[param]
+        for data_point in data:
+            data_point = float(data_point)
+        plt.hist(data, bins=bins, color="skyblue", edgecolor="black")
+        plt.show()
