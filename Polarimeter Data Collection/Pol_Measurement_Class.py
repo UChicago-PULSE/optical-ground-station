@@ -56,6 +56,13 @@ class Pol_Measurement:
                 else:
                     data_dict[key_vals[m]] += [data_list[m]]
         self.data = data_dict
+        # Getting the angle from the name
+        name_str_list = self.name.split("_")
+        if len(name_str_list) > 2:
+            self.angle = float(name_str_list[2])
+        else:
+            self.angle = None
+
 
     def __time_to_milliseconds(self) -> list[float]:
         time_list = self.data["Elapsed Time [hh:mm:ss:ms]"]

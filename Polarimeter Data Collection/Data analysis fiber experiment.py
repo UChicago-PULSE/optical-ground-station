@@ -3,8 +3,6 @@ import os
 import math
 import matplotlib.pyplot as plt
 
-#file_path = r"C:\Users\juani\Personal\CubeSat\Polarimeter Data\Sample_polarimeter.csv"
-#measurement_1 = Pol_Measurement("Measure 1", file_path)
 
 def create_file_paths_non_recursive(dir_path: str) -> list[str]:
     """
@@ -43,9 +41,8 @@ def create_measurement_objects(file_paths: list[str]):
         measurement_list.append(Pol_Measurement(str_name, path))
     return measurement_list
 
-measured_objects = create_measurement_objects(create_file_paths_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data", []))
 
-def show_multi_plots(method_name, *args):
+def show_multi_plots(measured_objects, method_name, *args):
     num_plots = len(measured_objects)
     rows = math.ceil(math.sqrt(num_plots))  # Number of rows (rounded up)
     cols = math.ceil(num_plots / rows)      # Number of columns
@@ -66,7 +63,7 @@ def show_multi_plots(method_name, *args):
     plt.show()
 
 
-def multiplot_method_together(method_name, *args):
+def multiplot_method_together(measured_objects, method_name, *args):
     plt.figure()
     for i in range(len(measured_objects)):
         obj = measured_objects[i]
@@ -78,3 +75,11 @@ def multiplot_method_together(method_name, *args):
 #show_multi_plots("create_plot_to_time", "S 0 [mW]", 30)
 #show_multi_plots("plot_hist", "S 0 [mW]", 50)
 #multiplot_method_together("create_plot_to_time", "S 0 [mW]", 30)
+
+def create_angle_list(measured_objects):
+    angle_lst = []
+    for i in range(len(measured_objects)):
+        angle_lst.append(measured_objects[i].angle)
+    return angle_lst
+
+measured_objects = create_measurement_objects(create_file_paths_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data", []))
