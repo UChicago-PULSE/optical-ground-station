@@ -89,36 +89,43 @@ def create_stdev_list(measured_objects, param):
     for obj in measured_objects:
         stdev_list.append(obj.stdev(param))
     return stdev_list
+
 def create_plot_avg_to_angle(measured_objects, param):
     average_param_lst = create_avg_list(measured_objects, param)
     angle_lst = create_angle_list(measured_objects)
-    plt.plot(angle_lst, average_param_lst)
-    plt.xlabel("Angle")
+    plt.scatter(angle_lst, average_param_lst)
+    plt.xlabel("Angle [deg]")
     plt.ylabel(param)
 
 def create_plot_stdev_to_angle(measured_objects, param):
     stdev_param_lst = create_stdev_list(measured_objects, param)
     angle_lst = create_angle_list(measured_objects)
-    plt.plot(angle_lst, stdev_param_lst)
-    plt.xlabel("Angle")
+    plt.scatter(angle_lst, stdev_param_lst)
+    plt.xlabel("Angle [deg]")
     plt.ylabel(param)
 
-def plot_stdev_and_avg(measured_objects, param):
+def plot_avg_with_stdev(measured_objects, param):
     # Ignore the figure() argument if you want to show multiple graphs in a single window
     #plt.figure()
-    create_plot_avg_to_angle(measured_objects, param)
-    create_plot_stdev_to_angle(measured_objects, param)
+    average_param_lst = create_avg_list(measured_objects, param)
+    angle_lst = create_angle_list(measured_objects)
+    stdev_lst = create_stdev_list(measured_objects, param)
+    plt.scatter(angle_lst, average_param_lst)
+    # fmt = none adds errorbars without overriding scatter
+    plt.errorbar(angle_lst, average_param_lst, yerr=stdev_lst, fmt='None', color='red')
+    plt.xlabel("Angle [deg]")
+    plt.ylabel(param)
     plt.title(f"Angle vs {param}")
-    #plt.legend(["Average", "Standard Deviation"])
 
 measured_objects = create_measurement_objects(create_file_paths_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data", []))
 del measured_objects[0]
-keys = measured_objects[0].data_keys
-del keys[1]
-del keys[0]
+#keys = measured_objects[0].data_keys
+#del keys[1]
+#del keys[0]
+keys = ['Ellipticity[Â°] ', 'DOCP[%] ', 'Phase Difference[Â°] ', 'Power-Split-Ratio ', 'Power[mW] ']
 plt.figure()
-plt.legend(["Average", "Standard Deviation"])
 for i in range(len(keys)):
-    plt.subplot(4, 5, i+1)
-    plot_stdev_and_avg(measured_objects, keys[i])
+    plt.subplot(2, 3, i+1)
+    plot_avg_with_stdev(measured_objects, keys[i])
+    plt.title(f"Angle vs {keys[i]}")
 plt.show()
