@@ -117,15 +117,20 @@ def plot_avg_with_stdev(measured_objects, param):
     plt.ylabel(param)
     plt.title(f"Angle vs {param}")
 
+
+def multiple_avgwstdev_plots(measured_objects, param_keys: list[str], rows, columns):
+    plt.figure()
+    for i in range(len(param_keys)):
+        plt.subplot(rows, columns, i + 1)
+        plot_avg_with_stdev(measured_objects, param_keys[i])
+        plt.title(f"Angle vs {param_keys[i]}")
+    plt.show()
+
+
 measured_objects = create_measurement_objects(create_file_paths_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data", []))
 del measured_objects[0]
 #keys = measured_objects[0].data_keys
 #del keys[1]
 #del keys[0]
 keys = ['Ellipticity[Â°] ', 'DOCP[%] ', 'Phase Difference[Â°] ', 'Power-Split-Ratio ', 'Power[mW] ']
-plt.figure()
-for i in range(len(keys)):
-    plt.subplot(2, 3, i+1)
-    plot_avg_with_stdev(measured_objects, keys[i])
-    plt.title(f"Angle vs {keys[i]}")
-plt.show()
+multiple_avgwstdev_plots(measured_objects, keys, 2, 3)
