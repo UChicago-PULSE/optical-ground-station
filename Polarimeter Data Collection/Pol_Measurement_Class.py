@@ -107,16 +107,20 @@ class Pol_Measurement:
             else:
                 print("Cannot execute average on non-numerical values")
 
-    def create_plot_to_time(self, param: str, data_point_len):
+    def create_plot_to_time(self, param: str, data_point_len, data_jump):
         data_dict = self.data
         data = data_dict[param]
         time_list = self.__time_to_milliseconds()
         data_adj = []
         time_list_adj = []
+        if data_point_len == "All":
+            data_point_len = len(data)
+        if len(data) < data_jump * data_point_len:
+            print("Data out of index range")
         for i in range(data_point_len):
-            data_adj.append(data[i])
+            data_adj.append(data[i+i*data_jump])
             time_list_adj.append(time_list[i])
-        plt.plot(time_list_adj, data_adj)
+        plt.scatter(time_list_adj, data_adj)
         plt.xlabel("Time [ms]")
         plt.ylabel(f"{param}")
         plt.title(f"{param} to time, {self.name}")

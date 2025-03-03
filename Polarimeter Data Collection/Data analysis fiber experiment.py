@@ -132,5 +132,12 @@ del measured_objects[0]
 #keys = measured_objects[0].data_keys
 #del keys[1]
 #del keys[0]
-keys = ['Ellipticity[Â°] ', 'DOCP[%] ', 'Phase Difference[Â°] ', 'Power-Split-Ratio ', 'Power[mW] ']
-multiple_avgwstdev_plots(measured_objects, keys, 2, 3)
+#keys = ['Ellipticity[Â°] ', 'DOCP[%] ', 'Phase Difference[Â°] ', 'Power-Split-Ratio ', 'Power[mW] ']
+#multiple_avgwstdev_plots(measured_objects, keys, 2, 3)
+#angle_lst = create_angle_list(measured_objects)
+#idx = angle_lst.index(8)
+#print(idx)
+#measured_objects[idx].plot_hist('Phase Difference[Â°] ', 50)
+#plt.show()
+#measured_objects[idx].create_plot_to_time('Phase Difference[Â°] ', "All", 0)
+#plt.show()
