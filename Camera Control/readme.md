@@ -13,3 +13,5 @@ Filter Wheeel: ZWO 7 Position Filter Wheel
 TWO MAIN ROUTINES:
 1. the alignment and platesolving to build initial pointing model
 2. the tracking sequence loop itself
+
+So we start in acquisition.py, then move to platesolve.py, then to alignment.py. Then we can move on to tracking.py, which calls acquisition in a loop. 
