@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 #from scipy.differentiate import derivative
 import numdifftools as nd
+max_slew_rate=5*60*60
 def two_comp_derivative(func, t_array):
   f1=lambda t: func(t)[:,0]
   f2=lambda t: func(t)[:,1]
@@ -109,8 +110,10 @@ class OGS_control:
         alt_s,az_s=alt_s.replace("#","") , az_s.replace("#","")
         alt,azm=360*self.hex_to_dec(alt_s)/rot , 360*self.hex_to_dec(az_s)/rot
         #Put return angle between 0 and 360 degrees
-        alt=np.where(alt>180,alt,alt-360)
-        azm=np.where(azm>180,azm,azm-360)
+        #alt=np.where(alt>180,alt,alt-360)
+        #azm=np.where(azm>360,azm,azm-360)
+        alt= alt % 360
+        azm= azm % 360
         if not self.horizon_aligned:
             return(azm,alt)
         else:
@@ -207,14 +210,17 @@ class OGS_control:
         """
         Takes in a schedule dict as built up by the Schedule_gen class and follows said schedule, doing measured waits at the time intervals
         and returning the recorded positions.
+
+        self.correction_factor: Multiplied with the error angle to give a corrective adjustment. Set to 0 for no correction.
         """
+        #self.correction_factor=2
     
         #Setup altaz list
         m_azm_alt_list=list()
         for time_ind in np.arange(len(schedule["time_array"])):
             if time_ind!=0:
                 dv=schedule["slew_rates"][time_ind]-schedule["slew_rates"][time_ind-1]
-                print('dv:',dv)
+                #print('dv:',dv)
             while (time.time()-self.global_start_time)+self.get_azm_alt_runtime+0.2 <schedule["time_array"][time_ind]:
                 self.measure(m_azm_alt_list)
                 pass
@@ -226,20 +232,31 @@ class OGS_control:
             if len(m_azm_alt_list)>0:
                 cur_time,cur_azm,cur_alt=m_azm_alt_list[-1][0],m_azm_alt_list[-1][1],m_azm_alt_list[-1][2]
                 #print(cur_time,cur_azm,cur_alt)
-                corr_slope_azm=2.5*deg_to_arcsec((self.func([cur_time])[1]-cur_azm)/self.time_step)
-                corr_slope_alt=2.5*deg_to_arcsec((self.func([cur_time])[0]-cur_alt)/self.time_step)
+                corr_slope_azm=self.correction_factor*deg_to_arcsec((self.func([cur_time])[1]-cur_azm)/self.time_step)
+                corr_slope_alt=self.correction_factor*deg_to_arcsec((self.func([cur_time])[0]-cur_alt)/self.time_step)
+                print("Measured",cur_azm,cur_alt)
                 print("Correction ",corr_slope_azm,corr_slope_alt)
 
             else:
                 corr_slope_azm=0
                 corr_slope_alt=0
-            self.var_AZM_slew(az_slr+corr_slope_azm)
-            self.var_ALT_slew(alt_slr+corr_slope_alt)
+            if abs(az_slr+corr_slope_azm)<max_slew_rate:
+                self.var_AZM_slew(az_slr+corr_slope_azm)
+            else:
+                sig=int(np.sign(az_slr+corr_slope_azm))
+                self.var_AZM_slew(max_slew_rate*sig)
+            if abs(alt_slr+corr_slope_alt)<max_slew_rate:
+                self.var_ALT_slew(alt_slr+corr_slope_alt)
+            else:
+                sig=int(np.sign(az_slr+corr_slope_azm))
+                self.var_ALT_slew(max_slew_rate*sig)
             #Wait and save to list
         self.measure(m_azm_alt_list)
          
         return(m_azm_alt_list,schedule)
-    def do_schedule_and_plot(self,schedule):
+    def do_schedule_and_plot(self,schedule,c_factor):
+        self.correction_factor=c_factor
+        #self.correction_factor=1
         self.func=schedule["func"]
         self.time_step=schedule["time_step"]
         data_list,schedule=self.follow_schedule(schedule)
@@ -249,6 +266,7 @@ class OGS_control:
 
         #Plot path actually taken vs path intended
         fig, ax = plt.subplots(2,2,figsize=(12, 8))
+        fig.suptitle(f"Correction factor is {c_factor}")
         #Altitude
         ax[0,0].plot(data_arr[:,0],data_arr[:,2],'bs',label="Altitude measured")
         ax[0,0].plot(schedule["int_pos_time_array"],schedule["int_positions"][:,0],'r',label="Altitude intended")
@@ -296,9 +314,7 @@ class OGS_control:
         plt.show()
 
 
-alt_offset_val=0
-control_object=OGS_control("first pass")
-control_object.horizon_north_align(alt_offset=alt_offset_val)
+
 
 """
 Makes a test pass
@@ -306,6 +322,7 @@ a constrols time scale of sine wave
 b controls amplitude
 c controls the offset of the sine wave from 0, should be equal to whatever offset is given in altitude
 """
+alt_offset_val=0
 time_step=0.5
 a=3
 b=5
@@ -325,5 +342,8 @@ Schedule_builder=Schedule_gen(0,4*np.pi*a,time_step,f)
 #Schedule_builder=Schedule_gen(0,4,time_step,g)
 schedule=Schedule_builder.put_together()
 #print(schedule)
-print(control_object.do_schedule_and_plot(schedule))
+for corr_factor in np.linspace(1.5,3.5,10):
+    control_object=OGS_control("first pass")
+    control_object.horizon_north_align(alt_offset=alt_offset_val)
+    print(control_object.do_schedule_and_plot(schedule,corr_factor))
 
