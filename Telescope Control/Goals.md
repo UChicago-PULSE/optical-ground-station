@@ -10,5 +10,6 @@ Now, for sub-goals for each of these larger goals for the quarter:
   - Use software recommended by seth to generate path for satellite given a two line element (TLE). Then use astropy to turn this into AZM and ALT for different times, then use this to output a schedule. 
 
 (1.3): 
-  - Address error that happens when slew rate gets to large and everything breaks. 
+  - Address error that happens when slew rate gets to large and everything breaks.
+  - Finish creating software that alligns telescope. Both with a northward horizon alignment and also a known starts tracking model.
   - Use simulated sat passes to measure RMS and find an optimal correction factor. This is important to do on top of sin wave tests becasue the real passes could have structure that causes different behavior than we see in sin curves. 
