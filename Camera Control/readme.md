@@ -1,5 +1,4 @@
 Documentation for the camera code 
-https://i.zwoastro.com/zwo-website/manuals/ASI1600_Manual_EN_V1.5.pdf
 
 Testing Camera: ZWO ASI 1600MM Pro Cooled Monochrome Astronomy Camera 
 Filter Wheeel: ZWO 7 Position Filter Wheel
