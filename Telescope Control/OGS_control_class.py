@@ -178,7 +178,7 @@ class OGS_control:
         self.nexstarComm_read_until(nexstar.slewALT_var(rate),b'#')
         self.slew_rates[0]=rate
     #This might be flipped, watch out!
-    def Go_to_AZM_ALT(self,azm,alt):
+    def Go_to_AZM_ALT_sat(self,azm,alt):
         full_rot=65536 
         alt_frac=alt/360
         azm_frac=azm/360
@@ -187,6 +187,83 @@ class OGS_control:
         print((alt_out,azm_out))
         self.nexstarComm_read_until(nexstar.gotoAZM_ALT(azm_out,alt_out),b'#')
 
+    def Go_To_azm_alt(self,target_azmalt,prec=10):
+        """
+        Go to function that uses only structure from this file. 
+        """
+        maxrate=3600/3600
+        #Assume a=4deg/s^2
+        a=4.  #deg/s^2
+        #determne max angle of accelerating domain
+        theta_accel=0.5*((maxrate/3600)**2)/a
+        accel_domain_time=(maxrate/3600)/a
+        #Get angular difference
+        (cur_azm,cur_alt)=self.get_azmalt_degrees()
+        curazmalt=np.array([cur_azm,cur_alt])
+        difs=targetazmalt-curazmalt
+        argmax=np.argmax(difs)
+        #Figure out if we are inside or outside accelerating domain in both dimensions
+        accel_domain= abs(difs)<theta_accel
+        #Get times to stop in each dimension
+        slew_time=np.zeros(2)
+        slew_time[accel_domain]=np.sqrt(np.abs((2*difs[accel_domain])/a))
+        #We use 2*theta_accel to account for movement while decelerating
+        slew_time[~accel_domain]=accel_domain_time + (np.abs(difs[~accel_domain])-2*theta_accel)/maxrate
+
+        #Actually slew!
+        #Setup altaz list
+        m_azm_alt_list=list()
+         
+        #Get initial time
+        goto_start_time=time.time()
+        self.var_AZM_slew(maxrate*3600*np.sign(difs[0]))
+        self.var_ALT_slew(maxrate*3600*np.sign(difs[1]))
+        self.slew_rates=np.array([maxrate,maxrate])
+        first=True
+ 
+        while time.time()-goto_start_time<slew_time.max():
+            if first:
+                bool_arr=time.time()-goto_start_time<slew_time
+                first=False
+            nbool_arr=time.time()-goto_start_time<slew_time
+            #Detect if we reached any stop times
+            if np.array_equiv(nbool_arr,bool_arr):
+                self.measure(m_azm_alt_list)
+                continue
+            #If we have, send new slew rates
+            int_arr=nbool_arr.astype(int)
+            self.var_AZM_slew(int_arr[0]*maxrate*3600*np.sign(difs[0]))
+            self.var_ALT_slew(int_arr[1]*maxrate*3600*np.sign(difs[1]))
+            self.slew_rates=3600*np.sign(difs)*int_arr*np.array([maxrate,maxrate])
+            bool_arr=nbool_arr
+        self.Stop()
+        self.slew_rates=np.array([0,0])
+        #Wait for things to settle down
+        wait_time_start=time.time()
+        wait_time=2
+        while time.time()<wait_time_start+wait_time:
+            self.measure(m_azm_alt_list)
+        #Now, calibrate
+        #We should be completely inside the acceleration domain here
+        #Get difs
+        (cur_azm,cur_alt)=self.get_azmalt_degrees()
+        curazmalt=np.array([cur_azm,cur_alt])
+        difs=targetazmalt-curazmalt
+        while difs.max()>prec:
+            #Get difs
+            (cur_azm,cur_alt)=self.get_azmalt_degrees()
+            curazmalt=np.array([cur_azm,cur_alt])
+            difs=targetazmalt-curazmalt #in degrees
+            self.var_AZM_slew(difs[0]*3600)
+            self.var_ALT_slew(difs[1]*3600)
+            self.slew_rates=difs*3600
+            self.measure(m_azm_alt_list)
+        
+        return(m_azm_alt_list)
+            
+            
+
+            
     def do_the_thing(self):
         """
         This command is a intial version of what schedules will look like, set slew rates, wait with measured wait for some 
@@ -341,9 +418,15 @@ def g(x):
 Schedule_builder=Schedule_gen(0,4*np.pi*a,time_step,f)
 #Schedule_builder=Schedule_gen(0,4,time_step,g)
 schedule=Schedule_builder.put_together()
+control_object=OGS_control("first pass")
+control_object.horizon_north_align(alt_offset=alt_offset_val)
+print(control_object.Go_To_azm_alt(10,7))
+time.sleep(0.1)
+#control_object.Go_To_azm_alt(-1,+1)
+print(control_object.get_azmalt_degrees())
 #print(schedule)
-for corr_factor in np.linspace(1.5,3.5,10):
-    control_object=OGS_control("first pass")
-    control_object.horizon_north_align(alt_offset=alt_offset_val)
-    print(control_object.do_schedule_and_plot(schedule,corr_factor))
+#for corr_factor in np.linspace(1.5,3.5,10):
+ #   control_object=OGS_control("first pass")
+ #   control_object.horizon_north_align(alt_offset=alt_offset_val)
+ #   print(control_object.do_schedule_and_plot(schedule,corr_factor))
 
