@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (QMainWindow, QVBoxLayout, QPushButton, QWidget,
-                             QStackedWidget, QLabel, QHBoxLayout, QSizePolicy)
+                             QStackedWidget, QLabel, QHBoxLayout, QSizePolicy) # Added QSizePolicy
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QPalette
+from PyQt6.QtGui import QPalette # Added QPalette
 import numpy as np
 from datetime import datetime
 from collections import deque
@@ -9,6 +9,9 @@ from collections import deque
 # Import page widgets
 from telemetry_page import TelemetryPage
 from data_analysis_page import DataAnalysisPage
+# --- Import the new command center page ---
+from command_center_page import CommandCenterPage
+# --- End import ---
 
 # --- Constants ---
 MAX_DATA_POINTS = 100 # Max points to store and plot
@@ -77,7 +80,9 @@ class MainWindow(QMainWindow):
         sidebar_layout = QVBoxLayout(sidebar_container)
         sidebar_layout.setContentsMargins(10, 0, 10, 0)
         sidebar_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.button_names = ["Incoming Telemetry", "Data Analysis", "Telescope Controls", "Command Center"]
+        # --- Change button name in the list ---
+        self.button_names = ["Telemetry Viewer", "Data Analysis", "Telescope Controls", "Command Center"]
+        # --- End change ---
         self.buttons = [ QPushButton(name) for name in self.button_names]
         for button in self.buttons:
             button.clicked.connect(self.change_page)
@@ -88,12 +93,17 @@ class MainWindow(QMainWindow):
         # Instantiate page widgets
         self.telemetry_page = TelemetryPage()
         self.data_analysis_page = DataAnalysisPage(main_window=self) # Pass self
+        # --- Instantiate Command Center Page ---
+        self.command_center_page = CommandCenterPage()
+        # --- End instantiation ---
         # Add instances to stacked widget
         self.pages.addWidget(self.telemetry_page)
         self.pages.addWidget(self.data_analysis_page)
-        # Add placeholder pages
+        # Add placeholder page for Telescope Controls for now
         self.pages.addWidget(self.create_placeholder_page("Telescope Controls Page"))
-        self.pages.addWidget(self.create_placeholder_page("Command Center Page"))
+        # --- Add Command Center Page instance ---
+        self.pages.addWidget(self.command_center_page)
+        # --- End adding instance ---
 
         content_layout.addWidget(sidebar_container)
         content_layout.addWidget(self.pages)
@@ -109,12 +119,6 @@ class MainWindow(QMainWindow):
         if checked:
             print("System turned ON")
             self.telemetry_timer.start(1000) # Update interval
-            # Clear old data on restart? Optional.
-            # self.timestamps.clear()
-            # self.sensor_a_data.clear()
-            # self.sensor_b_data.clear()
-            # self.data_analysis_page.update_plots() # Update plots if clearing data
-            # self.data_analysis_page.update_table(MAX_TABLE_ROWS)
         else:
             print("System turned OFF")
             self.telemetry_timer.stop()
@@ -174,12 +178,6 @@ class MainWindow(QMainWindow):
             status_color = "red"
             last_msg = self.telemetry_page.last_message_label.text() # Keep last message time
 
-            # Optionally append NaNs when disconnected
-            # self.timestamps.append(now)
-            # self.sensor_a_data.append(np.nan)
-            # self.sensor_b_data.append(np.nan)
-            # self.data_analysis_page.update_plots()
-
         # Update status on telemetry page regardless of connection
         self.telemetry_page.update_status(status_text, status_color, last_msg)
 
@@ -192,7 +190,5 @@ class MainWindow(QMainWindow):
             self.pages.setCurrentIndex(index)
         except ValueError:
             print(f"Error: Button '{sender.text()}' not found in expected names.")
-
-# --- No PlotCanvas class here anymore ---
 
 # --- No main execution block here anymore ---
