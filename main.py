@@ -4,8 +4,6 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QPushButton
                              QHeaderView) # Added QHeaderView
 from PyQt6.QtCore import Qt, QTimer # Import QTimer
 from PyQt6.QtGui import QPalette # Import QPalette to get colors
-import sys
-# --- Add necessary imports ---
 import matplotlib.pyplot as plt
 # --- Use the general Qt Agg backend ---
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
@@ -13,8 +11,6 @@ from matplotlib.figure import Figure
 import numpy as np
 from datetime import datetime # Import datetime
 from collections import deque # Import deque for efficient data storage
-
-# --- End of added imports ---
 
 # --- Constants ---
 MAX_DATA_POINTS = 100 # Max points to store and plot
@@ -338,6 +334,10 @@ class PlotCanvas(FigureCanvas):
 
 
 if __name__ == "__main__":
+    import sys
+    from PyQt6.QtWidgets import QApplication
+    from main_window import MainWindow # Import the main window class
+
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
