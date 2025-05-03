@@ -127,17 +127,62 @@ def multiple_avgwstdev_plots(measured_objects, param_keys: list[str], rows, colu
     plt.show()
 
 
-measured_objects = create_measurement_objects(create_file_paths_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data", []))
-del measured_objects[0]
-#keys = measured_objects[0].data_keys
-#del keys[1]
-#del keys[0]
-#keys = ['Ellipticity[Â°] ', 'DOCP[%] ', 'Phase Difference[Â°] ', 'Power-Split-Ratio ', 'Power[mW] ']
-#multiple_avgwstdev_plots(measured_objects, keys, 2, 3)
-#angle_lst = create_angle_list(measured_objects)
-#idx = angle_lst.index(8)
-#print(idx)
-#measured_objects[idx].plot_hist('Phase Difference[Â°] ', 50)
-#plt.show()
-#measured_objects[idx].create_plot_to_time('Phase Difference[Â°] ', "All", 0)
-#plt.show()
+def overlay_graph(mo_1: list, mo_2: list, key):
+    fig = plt.figure()
+    # Producing data for first measurement
+    average_param_lst_1 = create_avg_list(mo_1, key)
+    angle_lst_1 = create_angle_list(mo_1)
+    stdev_lst_1 = create_stdev_list(mo_1, key)
+
+    # Producing data for second measurement
+    average_param_lst_2 = create_avg_list(mo_2, key)
+    angle_lst_2 = create_angle_list(mo_2)
+    stdev_lst_2 = create_stdev_list(mo_2, key)
+
+    # Plotting axes for both
+    ax1 = fig.add_subplot(111)
+    ax1.scatter(angle_lst_1, average_param_lst_1, s = 10, c = 'b', marker = "s", label = 'first')
+    ax1.scatter(angle_lst_2, average_param_lst_2, s = 10, c = 'r', marker = "o", label = 'second')
+    # fmt = none adds errorbars without overriding scatter
+
+    plt.errorbar(angle_lst_1, average_param_lst_1, yerr=stdev_lst_1, fmt='None', color='red')
+    plt.errorbar(angle_lst_2, average_param_lst_2, yerr=stdev_lst_2, fmt='None', color='red')
+
+    plt.xlabel("Angle [deg]")
+    plt.ylabel(key)
+    plt.title(f"Angle vs {key}")
+    plt.show()
+
+
+def overlay_multi_graphs(mo_1: list, mo_2: list, keys: list, rows, columns):
+    fig = plt.figure()
+    # Plotting average with stdev
+    for i in range(len(keys)):
+        plt.subplot(rows, columns, i + 1)
+        # Producing data for first measurement
+        average_param_lst_1 = create_avg_list(mo_1, keys[i])
+        angle_lst_1 = create_angle_list(mo_1)
+        stdev_lst_1 = create_stdev_list(mo_1, keys[i])
+
+        #Producing data for second measurement
+        average_param_lst_2 = create_avg_list(mo_2, keys[i])
+        angle_lst_2 = create_angle_list(mo_2)
+        stdev_lst_2 = create_stdev_list(mo_2, keys[i])
+
+        # Plotting axes for both
+        ax1 = fig.add_subplot(111)
+        ax1.scatter(angle_lst_1, average_param_lst_1, s = 10, c = 'b', marker = "s", label = 'first')
+        ax1.scatter(angle_lst_2, average_param_lst_2, s = 10, c = 'r', marker = "o", label = 'second')
+        # fmt = none adds errorbars without overriding scatter
+
+        plt.errorbar(angle_lst_1, average_param_lst_1, yerr=stdev_lst_1, fmt='None', color='red')
+        plt.errorbar(angle_lst_2, average_param_lst_2, yerr=stdev_lst_2, fmt='None', color='red')
+
+        plt.xlabel("Angle [deg]")
+        plt.ylabel(keys[i])
+        plt.title(f"Angle vs {keys[i]}")
+    plt.show()
+
+measured_objects_1 = create_measurement_objects(create_file_paths_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data\panda_normal_sofia_April 1, 2025", []))
+measured_objects_2 = create_measurement_objects(create_file_paths_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data\panda_normal_oliver_April 3, 2025", []))
+measured_objects_3 = create_measurement_objects(create_file_paths_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data\panda_normal_oliver_April 24, 2025", []))

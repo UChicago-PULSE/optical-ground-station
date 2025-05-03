@@ -11,8 +11,8 @@ class Pol_Measurement:
     def __init__(self, name: str, file_path: str):
         self.name = name
         self.path = file_path
-        # Opening csv and collecting data out of it
-        file = open(self.path)
+        # Opening csv in read mode and collecting data out of it
+        file = open(self.path, 'r')
         # String with all file content
         file_content = file.read()
         file_content_lines = file_content.splitlines()
