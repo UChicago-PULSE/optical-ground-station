@@ -7,17 +7,31 @@ from cameraconnect import camera
 """
 This file is to take images.
 """
+def takepic(exposure, gain, name):
+    """"
+    This function will take an image. 
+    Inputs:
+        exposure: exposure time (micro - seconds)
+        gain: camera gain
+        name: name of the camera file saved
+    """
+    imagesetting(exposure, gain)
+    eightimage(name)
+    
+def imagesetting(exposure, gain):
+    """
+    This function will set the exposure time and gain of the camera.
+    Inputs:
+        exposure: int, exposure time, in MICROSECONDS (1e-6)
+        gain: int, number of counts per electron
 
-print("...")
-print("test changing exposure time.")
-camera.set_control_value(asi.ASI_EXPOSURE, 58)
-settings2 = camera.get_control_values()
-print(settings2['Exposure'])
-print(exposureconvert(1))
-#get_camera_info = asi.ASISetControlValue(0, ASI_EXPOSURE, 10000, ASI_FALSE)
-#print(get_camera_info)
-
-
+    """
+    print("Changing exposure time.")
+    camera.set_control_value(asi.ASI_EXPOSURE, exposure)
+    camera.set_control_value(asi.ASI_GAIN, gain)
+    settings = camera.get_control_values()
+    print(f"Exposure time is now {settings['Exposure']} microseconds, {settings['Exposure']/1000000} seconds.")
+    print(f"Gain is now {settings['Gain']}.")
 
 # Use the camera
 # writing function to take 8-bit mono image
@@ -43,4 +57,15 @@ def eightimage(name):
 
     print(f"image should now be saved in {filename}. go look!")
 
-eightimage("may3_58micron")
+
+
+
+
+#print("Changing exposure time.")
+#camera.set_control_value(asi.ASI_EXPOSURE, 10000000)
+#camera.set_control_value(asi.ASI_GAIN, 4)
+#settings = camera.get_control_values()
+#print(f"Exposure time is now {settings['Exposure']} microseconds, {settings['Exposure']/1000000} seconds.")
+#print(f"Gain is now {settings['Gain']}.")
+#get_camera_info = asi.ASISetControlValue(0, ASI_EXPOSURE, 10000, ASI_FALSE)
+#print(get_camera_info)
