@@ -42,18 +42,15 @@ class Schedule_gen():
         deltas[:-1]=np.copy(deltas[:-1])/self.time_step
         deltas[-1]=deltas[-1]/(self.tf-self.time_array[-1])
         return(deltas)
-    
     def put_together(self):
         sched=dict()
         sched["time_step"]=self.time_step
-        sched["time_array"]=self.time_array
-        sched["int_pos_time_array"]=np.append(self.time_array,self.tf)
+        sched["time_array"]=self.time_array-t0
+        sched["int_pos_time_array"]=np.append(self.time_array-t0,self.tf)
         sched["int_positions"]=self.evaluate_position(sched["int_pos_time_array"])
         sched["slew_rates"]= self.get_deriv_slope()
         sched["func"]=self.evaluate_position
         return(sched)
-    
-
 
 class OGS_control:
     def __init__(self,name):
@@ -74,7 +71,7 @@ class OGS_control:
         
         self.get_azm_alt_runtime=self.measure_runtime_of_get_coords()
         #test connection
-        print('connected:', self.ser.name)
+        #print('connected:', self.ser.name)
 
 
     def hex_to_dec(self,s):
@@ -115,9 +112,9 @@ class OGS_control:
         alt= alt % 360
         azm= azm % 360
         if not self.horizon_aligned:
-            return(azm,alt)
+            return(azm % 360,alt % 360)
         else:
-            return(azm-self.zero_azm,alt-self.zero_alt)
+            return((azm-self.zero_azm)% 360,(alt-self.zero_alt)% 360)
   
     def horizon_north_align(self,alt_offset=0):
         '''
@@ -127,6 +124,13 @@ class OGS_control:
       
         self.zero_azm,self.zero_alt=self.get_azmalt_degrees()
         self.zero_alt-=alt_offset
+        print(self.zero_azm,self.zero_alt)
+        self.horizon_aligned=True
+        print("Alignment attempted")
+    def align_azm_alt(self,actual_azm,actual_alt):     
+        cur_azm,cur_alt=self.get_azmalt_degrees()
+        self.zero_azm=cur_azm-actual_azm
+        self.zero_alt=cur_alt-actual_alt
         print(self.zero_azm,self.zero_alt)
         self.horizon_aligned=True
         print("Alignment attempted")
@@ -140,7 +144,7 @@ class OGS_control:
             time_list.append(dt)
         #plt.plot(np.arange(len(time_list)),time_list)
         #plt.show()
-        print(np.average(time_list))
+        #print(np.average(time_list))
         return(np.average(time_list))
     def measure_runtime_of_sending_slew_rates(self):
         N=100
@@ -164,6 +168,7 @@ class OGS_control:
     def measure(self,azm_alt_list):
 
         (azm_s,alt_z)=self.get_azmalt_degrees()
+        print(azm_s,alt_z)
         dt=time.time()-self.global_start_time
         azm_alt_list.append([dt,azm_s,alt_z,self.slew_rates[0],self.slew_rates[1]])
         return(azm_alt_list)
@@ -184,7 +189,6 @@ class OGS_control:
         azm_frac=azm/360
         alt_out=hex(round(full_rot*alt_frac))
         azm_out=hex(round(full_rot*azm_frac))
-        print((alt_out,azm_out))
         self.nexstarComm_read_until(nexstar.gotoAZM_ALT(azm_out,alt_out),b'#')
 
     def Go_To_azm_alt(self,target_azmalt,prec=10):
@@ -200,7 +204,7 @@ class OGS_control:
         #Get angular difference
         (cur_azm,cur_alt)=self.get_azmalt_degrees()
         curazmalt=np.array([cur_azm,cur_alt])
-        difs=targetazmalt-curazmalt
+        difs=target_azmalt-curazmalt
         argmax=np.argmax(difs)
         #Figure out if we are inside or outside accelerating domain in both dimensions
         accel_domain= abs(difs)<theta_accel
@@ -248,12 +252,12 @@ class OGS_control:
         #Get difs
         (cur_azm,cur_alt)=self.get_azmalt_degrees()
         curazmalt=np.array([cur_azm,cur_alt])
-        difs=targetazmalt-curazmalt
+        difs=target_azmalt-curazmalt
         while difs.max()>prec:
             #Get difs
             (cur_azm,cur_alt)=self.get_azmalt_degrees()
             curazmalt=np.array([cur_azm,cur_alt])
-            difs=targetazmalt-curazmalt #in degrees
+            difs=target_azmalt-curazmalt #in degrees
             self.var_AZM_slew(difs[0]*3600)
             self.var_ALT_slew(difs[1]*3600)
             self.slew_rates=difs*3600
@@ -291,32 +295,34 @@ class OGS_control:
         self.correction_factor: Multiplied with the error angle to give a corrective adjustment. Set to 0 for no correction.
         """
         #self.correction_factor=2
-    
         #Setup altaz list
         m_azm_alt_list=list()
         for time_ind in np.arange(len(schedule["time_array"])):
+            
             if time_ind!=0:
                 dv=schedule["slew_rates"][time_ind]-schedule["slew_rates"][time_ind-1]
                 #print('dv:',dv)
             while (time.time()-self.global_start_time)+self.get_azm_alt_runtime+0.2 <schedule["time_array"][time_ind]:
                 self.measure(m_azm_alt_list)
                 pass
+            
             #Set the slew rates
             dt=time.time()-self.global_start_time
-            alt_slr,az_slr=deg_to_arcsec(schedule["slew_rates"][time_ind])
+            az_slr,alt_slr,=deg_to_arcsec(schedule["slew_rates"][time_ind])
             #add slew rate correction 
             #if False:
             if len(m_azm_alt_list)>0:
                 cur_time,cur_azm,cur_alt=m_azm_alt_list[-1][0],m_azm_alt_list[-1][1],m_azm_alt_list[-1][2]
                 #print(cur_time,cur_azm,cur_alt)
-                corr_slope_azm=self.correction_factor*deg_to_arcsec((self.func([cur_time])[1]-cur_azm)/self.time_step)
-                corr_slope_alt=self.correction_factor*deg_to_arcsec((self.func([cur_time])[0]-cur_alt)/self.time_step)
+                corr_slope_azm=self.correction_factor*deg_to_arcsec((self.func(cur_time+t0)[0]-cur_azm)/self.time_step)
+                corr_slope_alt=self.correction_factor*deg_to_arcsec((self.func(cur_time+t0)[1]-cur_alt)/self.time_step)
                 print("Measured",cur_azm,cur_alt)
                 print("Correction ",corr_slope_azm,corr_slope_alt)
 
             else:
                 corr_slope_azm=0
                 corr_slope_alt=0
+            
             if abs(az_slr+corr_slope_azm)<max_slew_rate:
                 self.var_AZM_slew(az_slr+corr_slope_azm)
             else:
@@ -344,34 +350,34 @@ class OGS_control:
         #Plot path actually taken vs path intended
         fig, ax = plt.subplots(2,2,figsize=(12, 8))
         fig.suptitle(f"Correction factor is {c_factor}")
-        #Altitude
-        ax[0,0].plot(data_arr[:,0],data_arr[:,2],'bs',label="Altitude measured")
-        ax[0,0].plot(schedule["int_pos_time_array"],schedule["int_positions"][:,0],'r',label="Altitude intended")
+        #Azimuth
+        ax[0,0].plot(data_arr[:,0],data_arr[:,1],'bs',label="Azimuth measured")
+        ax[0,0].plot(schedule["int_pos_time_array"],schedule["int_positions"][:,0],'r',label="Azimuth intended")
         ax[0,0].legend(loc='lower left')
         ax[0,0].set_xlabel("Seconds")
         ax[0,0].set_ylabel("Degrees")
-        ax[0,0].set_title("Altitude")
-        #Altitude error 
-        ax[1,0].plot(data_arr[:,0],data_arr[:,2]-self.func(data_arr[:,0])[:,0],'r')
-        RMS_alt=np.sqrt((1/len(data_arr[:,2]))*np.sum((data_arr[:,2]-self.func(data_arr[:,0])[:,0])**2))
+        ax[0,0].set_title("Azimuth")
+        #Azimuth error
+        ax[1,0].plot(data_arr[:,0],data_arr[:,1]-self.func(data_arr[:,0])[:,0],'r')
+        RMS_azm=np.sqrt((1/len(data_arr[:,1]))*np.sum((data_arr[:,1]-self.func(data_arr[:,0])[:,0])**2))
         ax[1,0].set_xlabel("Seconds")
         ax[1,0].set_ylabel("Degrees")
-        ax[1,0].set_title(f"Altitude error, RMS={RMS_alt} deg")
-        #Azimuth
-        ax[0,1].plot(data_arr[:,0],data_arr[:,1],'bs',label="Azimuth measured")
-        ax[0,1].plot(schedule["int_pos_time_array"],schedule["int_positions"][:,1],'r',label="Azimuth intended")
+        ax[1,0].set_title(f"Azimuth error, RMS={RMS_azm} deg")
+        plt.tight_layout()
+        plt.show()
+        #Altitude
+        ax[0,1].plot(data_arr[:,0],data_arr[:,2],'bs',label="Altitude measured")
+        ax[0,1].plot(schedule["int_pos_time_array"],schedule["int_positions"][:,1],'r',label="Altitude intended")
         ax[0,1].legend(loc='lower left')
         ax[0,1].set_xlabel("Seconds")
         ax[0,1].set_ylabel("Degrees")
-        ax[0,1].set_title("Azimuth")
-        #Azimuth error
-        ax[1,1].plot(data_arr[:,0],data_arr[:,1]-self.func(data_arr[:,0])[:,1],'r')
-        RMS_azm=np.sqrt((1/len(data_arr[:,1]))*np.sum((data_arr[:,1]-self.func(data_arr[:,0])[:,1])**2))
+        ax[0,1].set_title("Altitude")
+        #Altitude error 
+        ax[1,1].plot(data_arr[:,0],data_arr[:,2]-self.func(data_arr[:,0])[:,1],'r')
+        RMS_alt=np.sqrt((1/len(data_arr[:,2]))*np.sum((data_arr[:,2]-self.func(data_arr[:,0])[:,1])**2))
         ax[1,1].set_xlabel("Seconds")
         ax[1,1].set_ylabel("Degrees")
-        ax[1,1].set_title(f"Azimuth error, RMS={RMS_azm} deg")
-        plt.tight_layout()
-        plt.show()
+        ax[1,1].set_title(f"Altitude error, RMS={RMS_alt} deg")
     def do_and_plot(self):
         data_list=self.do_the_thing()
         data_arr=np.array(data_list)
@@ -399,7 +405,7 @@ a constrols time scale of sine wave
 b controls amplitude
 c controls the offset of the sine wave from 0, should be equal to whatever offset is given in altitude
 """
-alt_offset_val=0
+alt_offset_val=30
 time_step=0.5
 a=3
 b=5
@@ -410,23 +416,33 @@ def f(x):
         return(np.stack(((c+b*np.cos(x/a)-b),(-b*np.cos(x/a)+b)),axis=0))
     else:
         return(np.stack(((c+b*np.cos(x/a)-b),(-b*np.cos(x/a)+b)),axis=1))
-def g(x):
-    if x<2:
-        return(np.stack((b*x,-b*x),axis=1))
-    else:
-        return(np.stack((-b*x+2*b,b*x-2*b),axis=1))
-Schedule_builder=Schedule_gen(0,4*np.pi*a,time_step,f)
-#Schedule_builder=Schedule_gen(0,4,time_step,g)
+
+        
+# Unpacking the pickle file
+import pickle
+from scipy.interpolate import CubicSpline
+with open('first_pass.pickle', 'rb') as file:
+    loaded_data = pickle.load(file)
+azm_points=loaded_data['azm'] #degrees 
+alt_points=loaded_data['alt'] #degrees
+times_d=loaded_data['times'] # Times in days
+#First of all, put times into minutes
+times_s=times_d*24*60*60
+#Stack both
+azm_alt=np.stack((azm_points,alt_points),axis=1)
+#Interpolate
+path = CubicSpline(times_s, azm_alt)
+#Done
+t0=8*60
+tf=11*60
+
+#Schedule_builder=Schedule_gen(0,4*np.pi*a,time_step,f)
+Schedule_builder=Schedule_gen(t0,tf,time_step,path)
 schedule=Schedule_builder.put_together()
+target_azm,target_alt=path(t0)
 control_object=OGS_control("first pass")
-control_object.horizon_north_align(alt_offset=alt_offset_val)
-print(control_object.Go_To_azm_alt(10,7))
-time.sleep(0.1)
-#control_object.Go_To_azm_alt(-1,+1)
+control_object.align_azm_alt(path(t0)[0],path(t0)[1])
 print(control_object.get_azmalt_degrees())
-#print(schedule)
-#for corr_factor in np.linspace(1.5,3.5,10):
- #   control_object=OGS_control("first pass")
- #   control_object.horizon_north_align(alt_offset=alt_offset_val)
- #   print(control_object.do_schedule_and_plot(schedule,corr_factor))
+corr_factor=2
+print(control_object.do_schedule_and_plot(schedule,corr_factor))
 

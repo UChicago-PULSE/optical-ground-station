@@ -11,8 +11,8 @@ class Pol_Measurement:
     def __init__(self, name: str, file_path: str):
         self.name = name
         self.path = file_path
-        # Opening csv and collecting data out of it
-        file = open(self.path)
+        # Opening csv in read mode and collecting data out of it
+        file = open(self.path, 'r')
         # String with all file content
         file_content = file.read()
         file_content_lines = file_content.splitlines()
@@ -121,9 +121,9 @@ class Pol_Measurement:
             data_adj.append(data[i+i*data_jump])
             time_list_adj.append(time_list[i])
         plt.scatter(time_list_adj, data_adj)
-        plt.xlabel("Time [ms]")
-        plt.ylabel(f"{param}")
-        plt.title(f"{param} to time, {self.name}")
+        plt.xlabel("Time [ms]", fontsize=8)
+        plt.ylabel(f"{param}", fontsize=8)
+        plt.title(f"{param} to time, {self.name}", fontsize=8)
 
     def plot_2param(self, param_x: str, param_y: str):
         data_dict = self.data
