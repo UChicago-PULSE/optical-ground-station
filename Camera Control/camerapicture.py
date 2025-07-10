@@ -3,11 +3,13 @@ import zwoasi as asi
 import sys
 import os
 from astropy.io import fits
-from cameraconnect import camera
+from cameraconnect import*
 """
 This file is to take images.
 """
-def takepic(exposure, gain, name):
+
+
+def takepic(exposure, gain, name, camera):
     """"
     This function will take an image. 
     Inputs:
@@ -15,10 +17,12 @@ def takepic(exposure, gain, name):
         gain: camera gain
         name: name of the camera file saved
     """
-    imagesetting(exposure, gain)
-    eightimage(name)
-    
-def imagesetting(exposure, gain):
+    imagesetting(exposure, gain, camera)
+    eightimage(name, camera)
+
+
+
+def imagesetting(exposure, gain, camera):
     """
     This function will set the exposure time and gain of the camera.
     Inputs:
@@ -36,7 +40,7 @@ def imagesetting(exposure, gain):
 # Use the camera
 # writing function to take 8-bit mono image
 
-def eightimage(name):
+def eightimage(name, camera):
     """
     This function will take in a file name and take and save a FITS file.
     """
@@ -58,7 +62,8 @@ def eightimage(name):
     print(f"image should now be saved in {filename}. go look!")
 
 
-
+cam_1 = camconnect()
+takepic(1000,  4.736763, "firstattach", camera=cam_1)
 
 
 #print("Changing exposure time.")

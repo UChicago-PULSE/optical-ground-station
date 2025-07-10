@@ -3,6 +3,7 @@ import zwoasi as asi
 import sys
 import os
 from astropy.io import fits
+import time
 
 # suppress this weird error message
 #import logging
@@ -12,43 +13,69 @@ from astropy.io import fits
 sdk_filename = '/Users/ashleyashiku/Desktop/PULSE-A/ASI_Camera_SDK/ASI_linux_mac_SDK_V1.37/lib/mac/libASICamera2.dylib'
 asi.init(sdk_filename)
 
-def camconnect(info = False):
-    # Now we're connecting to camera.
-    print(f"Number of connected cameras: {asi.get_num_cameras()}")
 
-    #list cameras and connect to first
-    num_cameras = asi.get_num_cameras()
-    if num_cameras == 0:
-        print('No cameras found')
-        sys.exit(0)
+# Now we're connecting to camera.
+print(f"Number of connected cameras: {asi.get_num_cameras()}")
 
-    cameras_found = asi.list_cameras()  # Models names of the connected cameras
+#list cameras and connect to first
+num_cameras = asi.get_num_cameras()
+if num_cameras == 0:
+    print('No cameras found')
+    sys.exit(0)
 
-    if num_cameras == 1:
-        camera_id = 0
-        print('Found one camera: %s' % cameras_found[0])
-    else:
-        print('Found %d cameras' % num_cameras)
-        for n in range(num_cameras):
-            print('    %d: %s' % (n, cameras_found[n]))
-        # TO DO: allow user to select a camera
-        camera_id = 0
-        print('Using #%d: %s' % (camera_id, cameras_found[camera_id]))
+cameras_found = asi.list_cameras()  # Models names of the connected cameras
 
-    camera = asi.Camera(camera_id)
-    if info:
-        settings = camera.get_control_values()
-        print("...")
-        print("here are the current camera controls.")
-        print(settings)
-        print("...")
-    print("Getting camera property.")
-    cam_prop = camera.get_camera_property()
-    print(f"Gain: {cam_prop['ElecPerADU']:2f}")
-    print(f"Pixel size: {cam_prop['PixelSize']}")
+if num_cameras == 1:
+    camera_id = 0
+    print('Found one camera: %s' % cameras_found[0])
+else:
+    print('Found %d cameras' % num_cameras)
+    for n in range(num_cameras):
+        print('    %d: %s' % (n, cameras_found[n]))
+    # TO DO: allow user to select a camera
+    camera_id = 0
+    print('Using #%d: %s' % (camera_id, cameras_found[camera_id]))
 
-if __name__ == "__main__":
-    camconnect()
+camera = asi.Camera(camera_id)
+
+print("Getting camera property.")
+cam_prop = camera.get_camera_property()
+print(f"Gain: {cam_prop['ElecPerADU']:2f}")
+print(f"Pixel size: {cam_prop['PixelSize']}")
+
+camera.set_control_value(asi.ASI_EXPOSURE, 15000000)
+
+#
+"""
+print('Capturing a single 8-bit mono image')
+
+    # where to save it
+save_dir = "/Users/ashleyashiku/Desktop/PULSE-A/cameratest/"
+os.makedirs(save_dir, exist_ok=True)
+
+camera.set_image_type(asi.ASI_IMG_RAW8)
+image = camera.capture()
+print(f'image taken. trust me on it. ')
+
+# specify image name
+imagename =  "bigtest16"+ ".fits"
+filename = os.path.join(save_dir,imagename)
+fits.writeto(filename, image, overwrite=True)
+
+print(f"image should now be saved in {filename}. go look!")
+"""
+camera.stop_video_capture()
+
+print('Enabling video mode')
+
+time.sleep(5)
+camera.stop_video_capture()
+print("ended cam")
+chat = camera.get_video_data()
+
+#if __name__ == "__main__":
+  #  camconnect()
+  #  image()
 
 
 #print(asi._get_camera_property)
