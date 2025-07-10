@@ -1,5 +1,5 @@
 ### Welcome to the Tracking Camera code!
-This code was compiled and organized by Ashley Ashiku (telescope engineer) but utilizes Python wrappers (written by Steve Marple 2017, search python-zwoasi) around C commands for ZWO ASI cameras from the software development kit.
+This code was written by Ashley Ashiku (telescope engineer) but utilizes Python wrappers (written by Steve Marple 2017, search python-zwoasi) around C commands for ZWO ASI cameras from the software development kit.
 
 This code controls and interfaces with the PULSE-A tracking camera, which is an integral part of our optical ground station's ability to track our Payload beacon. 
 
