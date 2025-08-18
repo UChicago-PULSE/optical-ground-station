@@ -1,0 +1,5 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "High Bandwidth SPST")(type "KiCad")(uri "${KIPRJMOD}/High Bandwidth SPST.kicad_sym")(options "")(descr ""))
+  (lib (name "PULSE-A OGS Symbol Library")(type "KiCad")(uri "${KIPRJMOD}/PULSE-A OGS Symbol Library.kicad_sym")(options "")(descr ""))
+)

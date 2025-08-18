@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "OGS Comparator Footpring Library V.01")(type "KiCad")(uri "${KIPRJMOD}/OGS Comparator Footpring Library V.01.pretty")(options "")(descr ""))
+)
