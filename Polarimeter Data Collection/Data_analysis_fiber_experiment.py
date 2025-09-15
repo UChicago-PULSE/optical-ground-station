@@ -183,13 +183,13 @@ def overlay_multi_graphs(mo_1: list, mo_2: list, keys: list, rows, columns):
         plt.title(f"Angle vs {keys[i]}")
     plt.show()
 
-measured_objects_1 = create_measurement_objects(create_file_paths_non_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data\Fiber Experiment\panda_normal_sofia_April 1, 2025"))
-measured_objects_2 = create_measurement_objects(create_file_paths_non_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data\Fiber Experiment\panda_normal_oliver_April 3, 2025"))
-measured_objects_3 = create_measurement_objects(create_file_paths_non_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data\Fiber Experiment\panda_normal_oliver_April 24, 2025"))
+# measured_objects_1 = create_measurement_objects(create_file_paths_non_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data\Fiber Experiment\panda_normal_sofia_April 1, 2025"))
+# measured_objects_2 = create_measurement_objects(create_file_paths_non_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data\Fiber Experiment\panda_normal_oliver_April 3, 2025"))
+# measured_objects_3 = create_measurement_objects(create_file_paths_non_recursive(r"C:\Users\juani\Personal\CubeSat\Polarimeter Data\Fiber Experiment\panda_normal_oliver_April 24, 2025"))
 
-print(measured_objects_1[0].data_keys)
+# print(measured_objects_1[0].data_keys)
 
-params = ['DOP[%] ', 'Ellipticity[Â°] ', 'Phase Difference[Â°] ', 'Power[mW] ']
-for param in params:
-    plot_avg_with_stdev(measured_objects_2, param)
-    plt.show()
+# params = ['DOP[%] ', 'Ellipticity[Â°] ', 'Phase Difference[Â°] ', 'Power[mW] ']
+# for param in params:
+#    plot_avg_with_stdev(measured_objects_2, param)
+#    plt.show()

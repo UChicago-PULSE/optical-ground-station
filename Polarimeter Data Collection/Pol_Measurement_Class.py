@@ -136,3 +136,19 @@ class Pol_Measurement:
         plt.ylabel("Frequency")
         plt.xlabel(f"{param} value")
         plt.title(f"{param}, {self.name}")
+
+    def create_correlation(self, param_1, param_2):
+        data_1 = self.data[param_1]
+        data_2 = self.data[param_2]
+        time_list = self.__time_to_milliseconds()
+        data_diff = []
+        data_avg = 0
+        for i in range(len(data_1)):
+            data_diff.append(data_1[i] - data_2[i])
+            data_avg += data_diff[i]
+        data_avg = data_avg / len(data_diff)
+        print(f"Average value of difference between data {data_avg}")
+        plt.scatter(time_list, data_diff)
+        plt.xlabel("Time [ms]", fontsize=8)
+        plt.ylabel(f"{param_1} - {param_2}", fontsize=8)
+        plt.title(f"{param_1} - {param_2} to time, {self.name}", fontsize=8)
