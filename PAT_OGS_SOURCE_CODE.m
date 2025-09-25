@@ -61,7 +61,7 @@ function[r] = BeginApplication(TheApplication, args)
     NSCRayTrace.IgnoreErrors = true;
     NSCRayTrace.SaveRays = false;
 
-    for k = 1:50
+    for k = 1:K
         obj.TiltAboutX = tiltX_deg(k);
         obj.TiltAboutY= tiltY_deg(k);
         NSCRayTrace.ClearDetectors(true);
@@ -172,3 +172,4 @@ end
 function  CleanupConnection(TheApplication)
 TheApplication.CloseApplication();
 end
+
