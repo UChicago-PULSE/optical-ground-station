@@ -19,6 +19,7 @@ else
 end
 end
 
+
 function[r] = BeginApplication(TheApplication, args)
     import ZOSAPI.*;
     apiPath = System.String.Concat(TheApplication.SamplesDir,'\API\Matlab'); 
@@ -27,7 +28,7 @@ function[r] = BeginApplication(TheApplication, args)
     TheSystem = TheApplication.PrimarySystem; 
     sampleDir = TheApplication.SamplesDir;
 
-    csvIn = "C:\Users\ELIZA\Downloads\satellite_state_log (3).csv";
+    csvIn ="C:\Users\ELIZA\Downloads\satellite_state_log_filtered (1).csv";
     testFile = "C:\Users\ELIZA\OneDrive - The University of Chicago\Zemax files\GSOPTICS_SM10_12.ZOS"; 
     TheSystem.LoadFile(testFile, false);
     
@@ -35,8 +36,8 @@ function[r] = BeginApplication(TheApplication, args)
     if ~exist(csvOut,'dir'), mkdir(csvOut); end
     outFile = fullfile(csvOut, sprintf('nsc_centroids_%s.csv', datestr(now,'yyyymmdd_HHMM')));
 
-    ogsLatDeg = 41.789722;
-    ogsLonDeg = -87.599724;
+    ogsLatDeg = 41.8781;
+    ogsLonDeg = -87.6298;
 
     TheNCE = TheSystem.NCE;
     det = [4,5,14];
@@ -44,11 +45,12 @@ function[r] = BeginApplication(TheApplication, args)
     obj = TheNCE.GetObjectAt(1);
 
     C = readtable(csvIn);
-    AB = calculate_42_angles(csvIn, ogsLatDeg, ogsLonDeg);
+    AB = readtable("C:\Users\ELIZA\Downloads\0.5_degree_pointing_error_matlab_angles_filtered_fixed.csv");
     K = height(AB);
 
-    tiltX_deg = asind( sind(AB.alpha_deg) .* sind(AB.beta_deg) );
-    tiltY_deg = atan2d( sind(AB.alpha_deg).*cosd(AB.beta_deg), cosd(AB.alpha_deg) );
+    tiltX_deg = asind(sind(AB.alpha_deg) .* sind(AB.beta_deg) );
+    tiltY_deg = atan2d(sind(AB.alpha_deg).*cosd(AB.beta_deg), cosd(AB.alpha_deg));
+    %COME BACK TO THIS^^^
 
     xC = nan(K,Ndet);
     yC = nan(K,Ndet);
@@ -61,9 +63,9 @@ function[r] = BeginApplication(TheApplication, args)
     NSCRayTrace.IgnoreErrors = true;
     NSCRayTrace.SaveRays = false;
 
-    for k = 1:K
+    for k = 1:20
         obj.TiltAboutX = tiltX_deg(k);
-        obj.TiltAboutY= tiltY_deg(k);
+        obj.TiltAboutY= 90 + tiltY_deg(k);
         NSCRayTrace.ClearDetectors(true);
         NSCRayTrace.RunAndWaitForCompletion();
         
@@ -120,7 +122,7 @@ function[r] = BeginApplication(TheApplication, args)
 
     NSCRayTrace.Close();
 
-    T = table(string(C.timestamp), tiltX_deg(:), tiltY_deg(:), AB.alpha_deg(:), AB.beta_deg(:), 'VariableNames', {'timestamp','tilt X', 'tilt Y', 'alpha', 'beta'});
+    T = table(string(C.timestamp), tiltX_deg(:), 90+ tiltY_deg(:), AB.alpha_deg(:), AB.beta_deg(:), 'VariableNames', {'timestamp','tilt X', 'tilt Y', 'alpha', 'beta'});
 
     for i = 1:Ndet
         did = det(i);
@@ -172,4 +174,3 @@ end
 function  CleanupConnection(TheApplication)
 TheApplication.CloseApplication();
 end
-
