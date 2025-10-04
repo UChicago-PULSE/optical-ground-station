@@ -148,16 +148,17 @@ class ZemaxMeasurement():
         plt.title(title)
         plt.show()
 
-    def plot2D(self, x, t, title):
+    def plot2D(self, x, t, title, ax=None):
 
+        if ax is None:
+            ax = plt.gca()
         x = np.array(x)
         t = np.array(t)
-
+        line, = ax.plot(t, x, label=title)
         # Plot
-        plt.plot(t, x)
-        plt.xlabel("Time [s]")
-        plt.ylabel("Detector centroid distance [mm]")
-        plt.legend = title
+        ax.set_xlabel("Time [s]")
+        ax.set_ylabel("Detector centroid distance [mm]")
+        return line
 
     def correlation(self, x, y, t, title):
         correlation_list = []
@@ -177,9 +178,17 @@ def plot_beam_paths(data):
     data.plot2Dtotime(data.trackingcameraX, data.trackingcameraY, data.t, "Tracking Camera")
 
 def plot_centroids(data):
-    data.plot2D(data.trackingcameraCentroid, data.t, "Tracking camera centroid")
-    data.plot2D(data.collimator0_centroid, data.t, "Collimator 0 centroid")
-    data.plot2D(data.collimator1_centroid, data.t, "Collimator 1 centroid")
+    fig, ax = plt.subplots(figsize=(8,5))
+
+    h1 = data.plot2D(data.trackingcameraCentroid, data.t, "Tracking camera centroid", ax=ax)
+    h2 = data.plot2D(data.collimator0_centroid, data.t, "Collimator 0 centroid", ax=ax)
+    h3 = data.plot2D(data.collimator1_centroid, data.t, "Collimator 1 centroid", ax=ax)
+
+    ax.set_title(f"{data.degree} Degree Error", fontsize=12, fontweight='bold', loc='center')
+    ax.legend(handles=[h1, h2, h3], loc="upper right", frameon=True)
+
+    ax.grid(True)
+    plt.tight_layout
     plt.show()
 
 def plot_correlations(data):
@@ -188,6 +197,6 @@ def plot_correlations(data):
     data.correlation(data.trackingcameraCentroid, data.collimator1_centroid, data.t, "Percentage difference between tracking camera and collimator 1 centroid")
     plt.show()
 
-#plot_beam_paths(data)
-#plot_centroids(data)
+plot_beam_paths(data)
+plot_centroids(data)
 plot_correlations(data)
