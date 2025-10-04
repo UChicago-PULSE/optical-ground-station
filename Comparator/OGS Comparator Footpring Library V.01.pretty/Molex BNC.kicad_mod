@@ -1,0 +1,101 @@
+(footprint "Molex BNC"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(property "Reference" "REF**"
+		(at 0 -0.5 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "94043bc8-4ffe-4b60-a025-244cdcbf8cc4")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+		)
+	)
+	(property "Value" "Molex BNC"
+		(at 0 1 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "5fc6a2fa-e518-44f2-8f7f-060af23e68e6")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "ff4bd52d-3514-439f-b043-7625f9711282")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "4f32c43e-3b2e-42a2-ad04-4d9c94de098d")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_rect
+		(start -7.38 2)
+		(end 7.38 11)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "0792aa00-40ec-42e7-99f1-95a83c1cffd5")
+	)
+	(pad "0" thru_hole circle
+		(at -5.08 8.42)
+		(size 2.3 2.3)
+		(drill 2.01)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "8f738b4d-ee68-4357-bc19-72c280f65f24")
+	)
+	(pad "0" thru_hole circle
+		(at 5.08 8.42)
+		(size 2.3 2.3)
+		(drill 2.01)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "45226a8f-2134-47fa-a860-f91722ba2a0f")
+	)
+	(pad "1" thru_hole circle
+		(at 0 3.34)
+		(size 1.3 1.3)
+		(drill 0.89)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "248e046f-b22d-4631-9d22-be82614e3ceb")
+	)
+	(pad "2" thru_hole circle
+		(at 2.54 3.34)
+		(size 1.3 1.3)
+		(drill 0.89)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "3c621076-46f9-4913-88ba-807fb83f20fc")
+	)
+	(embedded_fonts no)
+)
