@@ -7,15 +7,13 @@ class ZemaxMeasurement():
 
     def __init__(self, path):
         self.path = path
-        self.name = self.path.split("\\")[-1]
-        self.degree = float(self.name.split("_")[2])
 
         with open(self.path, 'r') as f:
             file_content_split = f.read().splitlines()
 
         # Detect header
         header = file_content_split[0].split(',')
-        start_index = 1 if "timestamp" in header[0].lower() else 0
+        start_index = 75 if "timestamp" in header[0].lower() else 0
 
         # Initialize lists
         self.t = []
@@ -92,6 +90,7 @@ class ZemaxMeasurement():
             self.trackingcameraX.append(tx)
             self.trackingcameraY.append(ty)
             self.trackingcameraCentroid.append(tcent)
+            
 
     def _convert_timestamp_to_seconds(self, ts_str):
         """
@@ -136,8 +135,8 @@ class ZemaxMeasurement():
         ax.set_aspect('equal', 'box')
 
         # Labels and title
-        ax.set_xlabel("X position")
-        ax.set_ylabel("Y position")
+        ax.set_xlabel("X position (mm)")
+        ax.set_ylabel("Y position (mm)")
         ax.set_title("Beam Position Over Time")
 
         # Add colorbar for time
@@ -158,23 +157,16 @@ class ZemaxMeasurement():
         plt.xlabel("Time [s]")
         plt.ylabel("Detector centroid distance [mm]")
         plt.legend = title
-
-    def correlation(self, x, y, t, title):
-        correlation_list = []
-        for i in range(len(x)):
-            correlation_list.append(x[i]/y[i])
-        plt.plot(t, correlation_list)
-        plt.xlabel("Time [s]")
-        plt.ylabel("Percentage difference between detectors")
-        plt.title(f"{title} at {self.degree} degrees pointing error")
+        plt.title("Perfect Pointing", fontsize=14, fontweight='bold', loc='center')
 
 
-data = ZemaxMeasurement(path=r"\\wsl.localhost\Ubuntu\home\jipa2004\optical-ground-station\Zemax\Zemax_PAT_0.05_Degree.csv")
+data = ZemaxMeasurement(path=r"C:\Users\ELIZA\OneDrive - The University of Chicago\MATLAB\ZOS_API projects\nsc_centroids_20251003_2001.csv")
 
 def plot_beam_paths(data):
     data.plot2Dtotime(data.collimator0_X, data.collimator0_Y, data.t, "Collimator 0")
     data.plot2Dtotime(data.collimator1_X, data.collimator1_Y, data.t, "Collimator 1")
     data.plot2Dtotime(data.trackingcameraX, data.trackingcameraY, data.t, "Tracking Camera")
+
 
 def plot_centroids(data):
     data.plot2D(data.trackingcameraCentroid, data.t, "Tracking camera centroid")
@@ -182,12 +174,6 @@ def plot_centroids(data):
     data.plot2D(data.collimator1_centroid, data.t, "Collimator 1 centroid")
     plt.show()
 
-def plot_correlations(data):
-    data.correlation(data.trackingcameraCentroid, data.collimator0_centroid, data.t, "Percentage difference between tracking camera and collimator 0 centroid")
-    plt.show()
-    data.correlation(data.trackingcameraCentroid, data.collimator1_centroid, data.t, "Percentage difference between tracking camera and collimator 1 centroid")
-    plt.show()
+plot_beam_paths(data)
+plot_centroids(data)
 
-#plot_beam_paths(data)
-#plot_centroids(data)
-plot_correlations(data)
