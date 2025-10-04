@@ -7,6 +7,8 @@ class ZemaxMeasurement():
 
     def __init__(self, path):
         self.path = path
+        self.name = self.path.split("\\")[-1]
+        self.degree = float(self.name.split("_")[2])
 
         with open(self.path, 'r') as f:
             file_content_split = f.read().splitlines()
@@ -157,8 +159,17 @@ class ZemaxMeasurement():
         plt.ylabel("Detector centroid distance [mm]")
         plt.legend = title
 
+    def correlation(self, x, y, t, title):
+        correlation_list = []
+        for i in range(len(x)):
+            correlation_list.append(x[i]/y[i])
+        plt.plot(t, correlation_list)
+        plt.xlabel("Time [s]")
+        plt.ylabel("Percentage difference between detectors")
+        plt.title(f"{title} at {self.degree} degrees pointing error")
 
-data = ZemaxMeasurement(path=r"\\wsl.localhost\Ubuntu\home\jipa2004\optical-ground-station\Zemax\ZemaxPAT0.5Degree.csv")
+
+data = ZemaxMeasurement(path=r"\\wsl.localhost\Ubuntu\home\jipa2004\optical-ground-station\Zemax\Zemax_PAT_0.05_Degree.csv")
 
 def plot_beam_paths(data):
     data.plot2Dtotime(data.collimator0_X, data.collimator0_Y, data.t, "Collimator 0")
@@ -171,5 +182,12 @@ def plot_centroids(data):
     data.plot2D(data.collimator1_centroid, data.t, "Collimator 1 centroid")
     plt.show()
 
-plot_beam_paths(data)
-plot_centroids(data)
+def plot_correlations(data):
+    data.correlation(data.trackingcameraCentroid, data.collimator0_centroid, data.t, "Percentage difference between tracking camera and collimator 0 centroid")
+    plt.show()
+    data.correlation(data.trackingcameraCentroid, data.collimator1_centroid, data.t, "Percentage difference between tracking camera and collimator 1 centroid")
+    plt.show()
+
+#plot_beam_paths(data)
+#plot_centroids(data)
+plot_correlations(data)
