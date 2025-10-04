@@ -157,7 +157,7 @@ class ZemaxMeasurement():
         plt.xlabel("Time [s]")
         plt.ylabel("Detector centroid distance [mm]")
         plt.legend = title
-        plt.title("Perfect Pointing", fontsize=14, fontweight='bold', loc='center')
+        plt.title("0.5 Pointing Error", fontsize=14, fontweight='bold', loc='center')
 
 
 data = ZemaxMeasurement(path=r"C:\Users\ELIZA\OneDrive - The University of Chicago\MATLAB\ZOS_API projects\nsc_centroids_20251003_2001.csv")
@@ -176,4 +176,5 @@ def plot_centroids(data):
 
 plot_beam_paths(data)
 plot_centroids(data)
+
 
